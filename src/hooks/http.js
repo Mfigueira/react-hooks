@@ -5,7 +5,7 @@ const initialState = {
   error: null,
   data: null,
   extra: null,
-  identifier: null
+  identifier: null,
 };
 
 const httpReducer = (curHttpState, action) => {
@@ -16,14 +16,14 @@ const httpReducer = (curHttpState, action) => {
         error: null,
         data: null,
         extra: null,
-        identifier: action.identifier
+        identifier: action.identifier,
       };
     case 'RESPONSE':
       return {
         ...curHttpState,
         loading: false,
-        data: action.responseData,
-        extra: action.extra
+        data: action.data,
+        extra: action.extra,
       };
     case 'ERROR':
       return { loading: false, error: action.errorMessage };
@@ -34,7 +34,7 @@ const httpReducer = (curHttpState, action) => {
   }
 };
 
-const useHttp = () => {
+export const useHttp = () => {
   const [httpState, dispatchHttp] = useReducer(httpReducer, initialState);
 
   const clear = useCallback(() => dispatchHttp({ type: 'CLEAR' }), []);
@@ -43,26 +43,24 @@ const useHttp = () => {
     (url, method, body, reqExtra, reqIdentifer) => {
       dispatchHttp({ type: 'SEND', identifier: reqIdentifer });
       fetch(url, {
-        method: method,
-        body: body,
+        method,
+        body,
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       })
-        .then(response => {
-          return response.json();
-        })
-        .then(responseData => {
+        .then(res => res.json())
+        .then(data => {
           dispatchHttp({
             type: 'RESPONSE',
-            responseData: responseData,
-            extra: reqExtra
+            data,
+            extra: reqExtra,
           });
         })
-        .catch(error => {
+        .catch(() => {
           dispatchHttp({
             type: 'ERROR',
-            errorMessage: 'Something went wrong!'
+            errorMessage: 'Something went wrong!',
           });
         });
     },
@@ -73,11 +71,9 @@ const useHttp = () => {
     isLoading: httpState.loading,
     data: httpState.data,
     error: httpState.error,
-    sendRequest: sendRequest,
     reqExtra: httpState.extra,
     reqIdentifer: httpState.identifier,
-    clear: clear
+    sendRequest,
+    clear,
   };
 };
-
-export default useHttp;

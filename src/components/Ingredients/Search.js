@@ -1,33 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
-
-import Card from '../UI/Card';
-import ErrorModal from '../UI/ErrorModal';
-import useHttp from '../../hooks/http';
+import React, { useState, useEffect } from 'react';
+import { Card } from '../UI/Card';
+import { ErrorModal } from '../UI/ErrorModal';
+import { useHttp } from '../../hooks/http';
 import './Search.css';
 
-const Search = React.memo(props => {
-  const { onLoadIngredients } = props;
+export const Search = React.memo(({ onLoadIngredients }) => {
   const [enteredFilter, setEnteredFilter] = useState('');
-  const inputRef = useRef();
   const { isLoading, data, error, sendRequest, clear } = useHttp();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (enteredFilter === inputRef.current.value) {
-        const query =
-          enteredFilter.length === 0
-            ? ''
-            : `?orderBy="title"&equalTo="${enteredFilter}"`;
-        sendRequest(
-          'https://react-hooks-update.firebaseio.com/ingredients.json' + query,
-          'GET'
-        );
-      }
+      const query =
+        enteredFilter.length === 0
+          ? ''
+          : `?orderBy="title"&equalTo="${enteredFilter}"`;
+      sendRequest(
+        `https://react-hooks-update.firebaseio.com/ingredients.json${query}`,
+        'GET'
+      );
     }, 500);
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [enteredFilter, inputRef, sendRequest]);
+    return () => clearTimeout(timer);
+  }, [enteredFilter, sendRequest]);
 
   useEffect(() => {
     if (!isLoading && !error && data) {
@@ -36,7 +29,7 @@ const Search = React.memo(props => {
         loadedIngredients.push({
           id: key,
           title: data[key].title,
-          amount: data[key].amount
+          amount: data[key].amount,
         });
       }
       onLoadIngredients(loadedIngredients);
@@ -51,7 +44,6 @@ const Search = React.memo(props => {
           <label>Filter by Title</label>
           {isLoading && <span>Loading...</span>}
           <input
-            ref={inputRef}
             type="text"
             value={enteredFilter}
             onChange={event => setEnteredFilter(event.target.value)}
@@ -61,5 +53,3 @@ const Search = React.memo(props => {
     </section>
   );
 });
-
-export default Search;

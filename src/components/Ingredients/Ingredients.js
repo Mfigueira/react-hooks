@@ -1,10 +1,10 @@
 import React, { useReducer, useEffect, useCallback, useMemo } from 'react';
 
-import IngredientForm from './IngredientForm';
-import IngredientList from './IngredientList';
-import ErrorModal from '../UI/ErrorModal';
-import Search from './Search';
-import useHttp from '../../hooks/http';
+import { IngredientForm } from './IngredientForm';
+import { IngredientList } from './IngredientList';
+import { ErrorModal } from '../UI/ErrorModal';
+import { Search } from './Search';
+import { useHttp } from '../../hooks/http';
 
 const ingredientReducer = (currentIngredients, action) => {
   switch (action.type) {
@@ -19,17 +19,10 @@ const ingredientReducer = (currentIngredients, action) => {
   }
 };
 
-const Ingredients = () => {
+export const Ingredients = () => {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
-  const {
-    isLoading,
-    error,
-    data,
-    sendRequest,
-    reqExtra,
-    reqIdentifer,
-    clear
-  } = useHttp();
+  const { isLoading, error, data, sendRequest, reqExtra, reqIdentifer, clear } =
+    useHttp();
 
   useEffect(() => {
     if (!isLoading && !error && reqIdentifer === 'REMOVE_INGREDIENT') {
@@ -37,7 +30,7 @@ const Ingredients = () => {
     } else if (!isLoading && !error && reqIdentifer === 'ADD_INGREDIENT') {
       dispatch({
         type: 'ADD',
-        ingredient: { id: data.name, ...reqExtra }
+        ingredient: { id: data.name, ...reqExtra },
       });
     }
   }, [data, reqExtra, reqIdentifer, isLoading, error]);
@@ -46,15 +39,18 @@ const Ingredients = () => {
     dispatch({ type: 'SET', ingredients: filteredIngredients });
   }, []);
 
-  const addIngredientHandler = useCallback(ingredient => {
-    sendRequest(
-      'https://react-hooks-update.firebaseio.com/ingredients.json',
-      'POST',
-      JSON.stringify(ingredient),
-      ingredient,
-      'ADD_INGREDIENT'
-    );
-  }, [sendRequest]);
+  const addIngredientHandler = useCallback(
+    ingredient => {
+      sendRequest(
+        'https://react-hooks-update.firebaseio.com/ingredients.json',
+        'POST',
+        JSON.stringify(ingredient),
+        ingredient,
+        'ADD_INGREDIENT'
+      );
+    },
+    [sendRequest]
+  );
 
   const removeIngredientHandler = useCallback(
     ingredientId => {
@@ -94,5 +90,3 @@ const Ingredients = () => {
     </div>
   );
 };
-
-export default Ingredients;
